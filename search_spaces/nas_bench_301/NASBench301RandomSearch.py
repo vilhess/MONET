@@ -21,7 +21,7 @@ class RandomSearchNB301(RandomSearch):
     def __init__(self, performance_model=None, max_iter=100):
         super(RandomSearchNB301, self).__init__(max_iter)
         if performance_model is None: 
-            models_1_0_dir = "api/nasbench301_models_v1.0/nb_models"
+            models_1_0_dir = "API/nb_models"
             model_paths = {
                 model_name: os.path.join(models_1_0_dir, '{}_v1.0'.format(model_name))
                 for model_name in ['xgb', 'lgb_runtime']

@@ -43,7 +43,7 @@ class LocalSearchNB301(LocalSearch):
     def __init__(self):
         super(LocalSearchNB301, self).__init__()
 
-        models_1_0_dir = "../Downloads/nb_models"
+        models_1_0_dir = "API/nb_models"
         model_paths = {
             model_name: os.path.join(models_1_0_dir, '{}_v1.0'.format(model_name))
             for model_name in ['xgb', 'lgb_runtime']

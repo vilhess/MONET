@@ -2,7 +2,7 @@
   "mcts": {
     "playout_epochs": 10,
     "C": 0.1,
-    "n_iter": 10000,
+    "n_iter": 100,
     "rave_b": 1e-1,
     "max_params": 120441,
     "playouts_per_selection": 1,
@@ -10,7 +10,7 @@
     "predictor_lr": 1e-3,
     "search_time": 3600,
     "nrpa_alpha": 0.1,
-    "nrpa_n_iter": 1000,
+    "nrpa_n_iter": 100,
     "softmax_temp": 2
   },
   "hardware": {

@@ -46,7 +46,7 @@ class RegularizedEvolutionNB301(RegularizedEvolution):
     def __init__(self, performance_model=None, population_size=50, cycles=200, sample_size=25):
         super(RegularizedEvolutionNB301, self).__init__(population_size, cycles, sample_size)
         if performance_model is None: 
-            models_1_0_dir = "api/nasbench301_models_v1.0/nb_models"
+            models_1_0_dir = "API/nb_models"
             model_paths = {
                 model_name: os.path.join(models_1_0_dir, '{}_v1.0'.format(model_name))
                 for model_name in ['xgb', 'lgb_runtime']

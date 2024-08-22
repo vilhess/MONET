@@ -22,7 +22,7 @@ class NASBench301UCT(UCT):
     def __init__(self, root_node: DARTSNode, performance_model=None, save_folder=None, disable_tqdm=False, params_path=None):
         super().__init__(root_node, save_folder=save_folder, disable_tqdm=disable_tqdm, params_path=params_path)
         if performance_model is None: 
-            models_1_0_dir = "api/nasbench301_models_v1.0/nb_models"
+            models_1_0_dir = "API/nb_models"
             model_paths = {
                 model_name: os.path.join(models_1_0_dir, '{}_v1.0'.format(model_name))
                 for model_name in ['xgb', 'lgb_runtime']
