@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
 from typing import Tuple
 
 from MCTS.Node import Node, AMAFNode, NestedNode

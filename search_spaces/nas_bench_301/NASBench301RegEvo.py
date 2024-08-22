@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
 from search_algorithms.RegularizedEvolution import RegularizedEvolution
 from search_spaces.nas_bench_301.NASBench301Node import DARTSNode, DARTSCell
 

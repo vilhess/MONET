@@ -1,8 +1,13 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
+
 import random
 import os
 import nasbench301 as nb
 from search_algorithms.LocalSearch import LocalSearch
 from search_spaces.nas_bench_301.NASBench301Node import DARTSCell, DARTSNode
+from collections import namedtuple
 
 class NB301CellLocalSearch(DARTSNode):
     def __init__(self, cell1=DARTSCell(), cell2=DARTSCell(), model=None):
