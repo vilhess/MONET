@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
 import numpy as np
 
 from MCTS.Node import AMAFNode, NestedNode
@@ -127,5 +130,4 @@ class NASBench101NestedNode(NASBench101Node, NestedNode):
 if __name__ == '__main__':
     cell = NASBench101Cell(4)
     node = NASBench101Node(cell)
-    node.get_action_tuples()
-    # while not cell.is_complete():
+    print(node.get_action_tuples())

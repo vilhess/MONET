@@ -1,5 +1,5 @@
 import sys
-sys.path.append('../../')
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
 
 import numpy as np
 import pandas as pd
@@ -74,9 +74,9 @@ class RegularizedEvolutionNB201_NTK(RegularizedEvolutionNTK):
 
 if __name__=="__main__":
     print('loading api')
-    api = API('/userdata/T0259728/Bureau/NAS-Bench-201-v1_1-096897.pth', verbose=False)
+    api = API('API/NAS-Bench-201-v1_1-096897.pth', verbose=False)
     print('api loaded')
-    df = pd.read_csv('../CSV/Cifar10-my-proof.csv')
+    df = pd.read_csv('benchmark_scores/Cifar10-my-proof.csv')
     evolution = RegularizedEvolutionNB201(api, df)
     evolution.run()
     evolution.plot()

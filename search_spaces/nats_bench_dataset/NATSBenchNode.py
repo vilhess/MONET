@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
 from MCTS.Node import Node, AMAFNode, NestedNode
 from search_spaces.nas_bench_201.NASBench201Node import NASBench201Node, NASBench201Cell, NASBench201Vertice
 import numpy as np

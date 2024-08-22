@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
 """ CNN for architecture search """
 from torch.autograd import Variable
 from search_spaces.DARTS.operations import *

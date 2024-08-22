@@ -1,6 +1,4 @@
 from collections import namedtuple
-import numpy as np
-from copy import deepcopy
 
 Genotype = namedtuple('Genotype', 'normal normal_concat reduce reduce_concat')
 

@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
 import copy
 import json
 import shutil
@@ -15,9 +18,8 @@ import random
 
 from MCTS import Node
 from MCTS.Node import Node, NestedNode
-from utils.model_trainer import ModelTrainer
 from utils.helpers import running_avg
-from .mcts_agent import MCTSAgent
+from MCTS.mcts_agent import MCTSAgent
 
 def softmax_temp(x, tau):
     e_x = np.exp(x / tau)

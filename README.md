@@ -9,7 +9,7 @@ We provide several files:
 
 ## Requirements
 
-- [NAS-Bench-101](https://github.com/google-research/nasbench)
+- [NAS-Bench-101](https://github.com/vilhess/nasbenchv2) (Edited for new versions of TensorFlow)
 - [NAS-Bench-201](https://github.com/D-X-Y/NAS-Bench-201)
 - [NATS-Bench](https://github.com/D-X-Y/NATS-Bench)
 - [NAS-Bench-301](https://github.com/automl/nasbench301)
@@ -22,7 +22,7 @@ We provide several files:
 1. Download the [`cifar10` dataset](https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz) and put it on a root folder `Dataset`.
 
 ### For NAS-Bench-101
-1. Download the [`dataset` directory](https://storage.googleapis.com/nasbench/nasbench_full.tfrecord) and put it into the `API` directory and also clone the [NAS-Bench-101 repo](https://github.com/google-research/nasbench) and install the package.
+1. Download the [`dataset` directory](https://storage.googleapis.com/nasbench/nasbench_full.tfrecord) and put it into the `API` directory and also clone the [NAS-Bench-101 repo] edited for new tensorflows versions: (https://github.com/vilhess/nasbenchv2) and install the package.
    
 ### For NAS-Bench-201
 1. Download the [`NAS-Bench-201` dataset](https://drive.google.com/open?id=1SKW0Cu0u8-gb18zDpaAGi0f74UdXeGKs) and put in the `API` directory in the root folder of this project.

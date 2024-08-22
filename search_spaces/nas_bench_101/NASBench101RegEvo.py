@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
 import numpy as np
 import random
 from copy import deepcopy
@@ -80,7 +83,7 @@ class RegularizedEvolutionNB101(RegularizedEvolution):
 
 if __name__=="__main__":
 
-    nasbench = api.NASBench("../Downloads/nasbench_full.tfrecord")
+    nasbench = api.NASBench("API/nasbench_full.tfrecord")
 
     INPUT = 'input'
     OUTPUT = 'output'
@@ -96,4 +99,4 @@ if __name__=="__main__":
 
     evolution = RegularizedEvolutionNB101(nasbench)
     evolution.run()
-    eolution.plot()
+    evolution.plot()

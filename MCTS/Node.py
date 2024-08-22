@@ -2,8 +2,6 @@ from itertools import chain
 from typing import Tuple
 import sys
 
-sys.path.append("..")
-
 
 class Node:
     """

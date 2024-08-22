@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
 import copy
 import random
 
@@ -10,7 +13,7 @@ from scipy.special import softmax
 from torch import nn
 
 from MCTS.Node import Node
-from MCTS.mcts_agent import UCT, RAVE, GRAVE, NTKScorer
+from MCTS.mcts_agent import UCT, NTKScorer
 from MCTS.nested import NestedMCS, NRPA, NRPA_NTK
 from search_spaces.nas_bench_101 import NASBench101Node
 from search_spaces.nas_bench_101.NASBench101Node import NASBench101AMAFNode, NASBench101NestedNode, NASBench101Cell
@@ -24,7 +27,6 @@ class NASBench101UCT(UCT):
     def __init__(self, root_node: NASBench101Node, api: nasbench.api, save_folder=None, params_path=None,
                  disable_tqdm=False):
         super().__init__(root_node, save_folder=save_folder, disable_tqdm=disable_tqdm, params_path=params_path)
-        # self.df = pd.read_csv("/userdata/T0259728/projets/nas_ntk/nas_bench_101/nas_bench_101.csv")
         self.api = api
         self.zobrist_table = []
         for i in range(ADJACENCY_MATRIX_SIZE):
@@ -88,59 +90,6 @@ class NASBench101UCT(UCT):
 
         del playout_node
         return reward
-
-
-class NASBench101RAVE(NASBench101UCT, RAVE):
-
-    def __init__(self, root_node: NASBench101AMAFNode, api, save_folder=None, params_path=None, disable_tqdm=False):
-        super(NASBench101RAVE, self).__init__(root_node, api, save_folder=save_folder, params_path=params_path, disable_tqdm=disable_tqdm)
-
-    def _selection(self, node: Node) -> Node:
-        """
-        Selects a candidate child node from the input node.
-        """
-        return RAVE._selection(self, node)
-
-    def _expansion(self, node: Node) -> Node:
-        """
-        Unless L ends the game decisively (e.g. win/loss/draw) for either player,
-        create one (or more) child nodes and choose node C from one of them.
-        Child nodes are any valid moves from the game position defined by L.
-        """
-        return RAVE._expansion(self, node)
-
-    def _playout(self, node: Node):
-        """
-        Crée un playout aléatoire et renvoie l'accuracy sur le modèle entraîné
-        :return:
-        """
-
-        return NASBench101UCT._playout(self, node)
-
-    def _backpropagation(self, node: Node, result: float):
-        """
-        Backpropagates the result of a playout up the tree.
-        """
-        return RAVE._backpropagation(self, node, result)
-
-    def main_loop(self) -> Node:
-        """
-        Body of UCT
-        """
-        return NASBench101UCT.main_loop(self)
-
-
-class NASBench101GRAVE(NASBench101RAVE, GRAVE):
-
-    def __init__(self, root_node: NASBench101AMAFNode, api, save_folder=None, params_path=None, disable_tqdm=False):
-        super().__init__(root_node, api, save_folder=save_folder, params_path=params_path, disable_tqdm=disable_tqdm)
-
-    def _selection(self, node: NASBench101AMAFNode) -> NASBench101AMAFNode:
-        """
-        Selects a candidate child node from the input node.
-        """
-        return GRAVE._selection(self, node)
-
 
 class NASBench101NestedMCS(NestedMCS, NASBench101UCT):
 
@@ -382,7 +331,4 @@ class NASBench101NRPA_NTK(NASBench101NRPA, NASBench101UCT_NTK, NRPA_NTK):
         return reward, sequence, test_acc
 
 if __name__ == '__main__':
-    print("hello")
     node = NASBench101AMAFNode(NASBench101Cell(7))
-    print("hellop node")
-    mcts = NASBench101RAVE(node, api=None, params_path="/userdata/T0259728/projets/nas/params.json", disable_tqdm=False)

@@ -175,7 +175,7 @@ if __name__ == "__main__":
 
     ax2 = ax1.twinx()
     ax2.plot(np.array(agent.best_accuracy), label="Accuracy", color="#e07a5f")
-    ax2.set_ylabel("CIFAR-100 accuracy")
+    ax2.set_ylabel("CIFAR-10 accuracy")
 
     plt.title("Evolution of the best architecture reward"); plt.xlabel("Iteration"); plt.ylabel("Accuracy"); 
     plt.legend();

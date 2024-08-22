@@ -1,8 +1,10 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
 import numpy as np
 from graphviz import Digraph
 
 from MCTS.Node import Node, AMAFNode, NestedNode
-from itertools import chain
 import random
 from copy import deepcopy
 

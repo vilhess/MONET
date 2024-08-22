@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
 import numpy as np
 from nasbench import api
 
@@ -48,7 +51,7 @@ class RandomSearchNASBench101(RandomSearch):
 
 if __name__=="__main__":
 
-    nasbench = api.NASBench("../Downloads/nasbench_full.tfrecord")
+    nasbench = api.NASBench("API/nasbench_full.tfrecord")
 
     INPUT = 'input'
     OUTPUT = 'output'

@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
 import numpy as np
 import pandas as pd
 import random
@@ -71,9 +74,9 @@ class LocalSearchNB201_NTK(LocalSearch_NTK):
 
 if __name__=="__main__":
     print('loading api')
-    api = API("../Downloads/NAS-Bench-201-v1_1-096897.pth", verbose=False)
+    api = API("API/NAS-Bench-201-v1_1-096897.pth", verbose=False)
     print('api loaded')
-    df = pd.read_csv('CSV/Cifar10-my-proof.csv')
+    df = pd.read_csv('benchmark_scores/Cifar10-NB201.csv')
 
     search = LocalSearchNB201(api, df)
     search.run()

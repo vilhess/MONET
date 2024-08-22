@@ -1,5 +1,5 @@
-import sys 
-sys.path.append('../../')
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
 
 import numpy as np
 import pandas as pd
@@ -71,9 +71,9 @@ class LocalSearchNATS_NTK(LocalSearch_NTK):
         return np.max(self.df['accuracy'])
 
 if __name__=="__main__":
-    path = "../Downloads/NATS-sss-v1_0-50262.pickle.pbz2"
+    path = "API/NATS-sss-v1_0-50262.pickle.pbz2"
     api = create(path, 'sss', fast_mode=False, verbose=False)
-    df = pd.read_csv('CSV/nats-c10-mydemo.csv')
+    df = pd.read_csv('benchmark_scores/Cifar10-NATS.csv')
     search = LocalSearchNATS(api, df)
     search.run()
     search.plot()

@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
 import random
 import copy
 import numpy as np
@@ -6,7 +9,7 @@ from torch import nn
 from xautodl.models import get_cell_based_tiny_net
 
 from MCTS import Node
-from MCTS.mcts_agent import UCT, RAVE, GRAVE, NTKScorer
+from MCTS.mcts_agent import UCT, NTKScorer
 from MCTS.nested import NestedMCS, NRPA, NestedMCS_NTK, NRPA_NTK
 from search_spaces.nats_bench_dataset.NATSBenchNode import NATSBenchSizeNode, NATSBenchSizeAMAFNode, NATSBenchSizeNestedNode
 
@@ -49,66 +52,9 @@ class NATSBenchUCT(UCT):
         # 2. Find the associated architecture index in the api
         index = self.api.query_index_by_arch(state_str)
         # 3. Fetch desired metric from API.
-        reward = self.api.get_more_info(index, 'cifar100', hp="90")["test-accuracy"]
+        reward = self.api.get_more_info(index, 'cifar10', hp="90")["test-accuracy"]
         # print(f"[PLAYOUT] reward = {reward}")
         return reward
-
-
-class NATSBenchRAVE(NATSBenchUCT, RAVE):
-
-    def __init__(self, root_node: NATSBenchSizeAMAFNode, api, save_folder=None, disable_tqdm=False, params_path=None):
-        NATSBenchUCT.__init__(self, root_node=root_node,
-                              api=api,
-                              save_folder=save_folder,
-                              params_path=params_path,
-                              disable_tqdm=disable_tqdm)
-        RAVE.__init__(self, root_node, params_path, save_folder, disable_tqdm)
-
-    def _selection(self, node: Node) -> Node:
-        """
-            Selects a candidate child node from the input node.
-            """
-        return RAVE._selection(self, node)
-
-    def _expansion(self, node: Node) -> Node:
-        """
-            Unless L ends the game decisively (e.g. win/loss/draw) for either player,
-            create one (or more) child nodes and choose node C from one of them.
-            Child nodes are any valid moves from the game position defined by L.
-            """
-        return RAVE._expansion(self, node)
-
-    def _playout(self, node: Node):
-        """
-            Crée un playout aléatoire et renvoie l'accuracy sur le modèle entraîné
-            :return:
-            """
-
-        return NATSBenchUCT._playout(self, node)
-
-    def _backpropagation(self, node: Node, result: float):
-        """
-            Backpropagates the result of a playout up the tree.
-            """
-        return RAVE._backpropagation(self, node, result)
-
-    def main_loop(self) -> Node:
-        """
-            Body of UCT
-            """
-        return NATSBenchUCT.main_loop(self)
-
-
-class NATSBenchGRAVE(NATSBenchRAVE, GRAVE):
-
-    def __init__(self, root_node: Node, api, save_folder=None, params_path=None, disable_tqdm=False):
-        super().__init__(root_node, api, save_folder=save_folder, params_path=params_path, disable_tqdm=disable_tqdm)
-
-    def _selection(self, node: Node) -> Node:
-        """
-        Selects a candidate child node from the input node.
-        """
-        return GRAVE._selection(self, node)
 
 
 class NATSBenchNestedMCS(NestedMCS, NATSBenchUCT):
@@ -201,53 +147,6 @@ class NATSBenchUCT_NTK(NATSBenchUCT, NTKScorer):
 
     def _score_network(self, network):
         return NTKScorer._score_network(self, network, benchmark="nats")
-
-
-class NATSBenchRAVE_NTK(NATSBenchUCT_NTK, NATSBenchRAVE):
-
-    def __init__(self, root_node: NATSBenchSizeAMAFNode, api, save_folder=None, params_path=None, disable_tqdm=False):
-        super(NATSBenchRAVE_NTK, self).__init__(root_node, api, save_folder=save_folder, params_path=params_path,
-                                                disable_tqdm=disable_tqdm)
-
-    def read_params(self, path):
-        NATSBenchUCT_NTK.read_params(self, path)
-        NATSBenchRAVE.read_params(self, path)
-
-    def _selection(self, node: Node) -> Node:
-        return NATSBenchRAVE._selection(self, node)
-
-    def _expansion(self, node: Node) -> Node:
-        return NATSBenchRAVE._expansion(self, node)
-
-    def _playout(self, node: Node):
-        return NATSBenchUCT_NTK._playout(self, node)
-
-    def _backpropagation(self, node: Node, result: float):
-        return NATSBenchRAVE._backpropagation(self, node, result)
-
-
-class NATSBenchGRAVE_NTK(NATSBenchRAVE_NTK, NATSBenchGRAVE):
-
-    def __init__(self, root_node: NATSBenchSizeAMAFNode, api, save_folder=None, params_path=None, disable_tqdm=False):
-        super(NATSBenchGRAVE_NTK, self).__init__(root_node, api, save_folder=save_folder, params_path=params_path,
-                                                 disable_tqdm=disable_tqdm)
-
-    def read_params(self, path):
-        NATSBenchRAVE_NTK.read_params(self, path)
-        NATSBenchGRAVE.read_params(self, path)
-
-    def _selection(self, node: Node) -> Node:
-        return NATSBenchGRAVE._selection(self, node)
-
-    def _expansion(self, node: Node) -> Node:
-        return NATSBenchGRAVE._expansion(self, node)
-
-    def _playout(self, node: Node):
-        return NATSBenchRAVE_NTK._playout(self, node)
-
-    def _backpropagation(self, node: Node, result: float):
-        return NATSBenchGRAVE._backpropagation(self, node, result)
-
 
 class NATSBenchNestedMCS_NTK(NATSBenchNestedMCS, NATSBenchUCT_NTK, NestedMCS_NTK):
 

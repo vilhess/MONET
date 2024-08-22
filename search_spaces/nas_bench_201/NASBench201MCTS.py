@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
 import copy
 import random
 
@@ -8,7 +11,7 @@ import numpy as np
 from torch import nn
 from xautodl.models import get_cell_based_tiny_net
 
-from MCTS.mcts_agent import UCT, RAVE, GRAVE, NTKScorer
+from MCTS.mcts_agent import UCT, NTKScorer
 from MCTS.Node import Node
 from MCTS.nested import NestedMCS, NRPA, NestedMCS_NTK, NRPA_NTK
 from search_spaces.nas_bench_201.NASBench201Node import NASBench201Node, NASBench201Cell, NASBench201AMAFNode, NASBench201NestedNode
@@ -57,59 +60,6 @@ class NASBench201UCT(UCT):
         #reward = self.api.get_more_info(index, 'cifar100', None, 200, False)["valid-accuracy"] / 100
         # print(f"[PLAYOUT] reward = {reward}")
         return reward
-
-
-class NASBench201RAVE(NASBench201UCT, RAVE):
-
-    def __init__(self, root_node: NASBench201AMAFNode, api, save_folder=None, params_path=None, disable_tqdm=False, df=None):
-        super(NASBench201RAVE, self).__init__(root_node, api, save_folder=save_folder, params_path=params_path,
-                                              disable_tqdm=disable_tqdm, df=df)
-
-    def _selection(self, node: Node) -> Node:
-        """
-        Selects a candidate child node from the input node.
-        """
-        return RAVE._selection(self, node)
-
-    def _expansion(self, node: Node) -> Node:
-        """
-        Unless L ends the game decisively (e.g. win/loss/draw) for either player,
-        create one (or more) child nodes and choose node C from one of them.
-        Child nodes are any valid moves from the game position defined by L.
-        """
-        return RAVE._expansion(self, node)
-
-    def _playout(self, node: Node):
-        """
-        Crée un playout aléatoire et renvoie l'accuracy sur le modèle entraîné
-        :return:
-        """
-
-        return NASBench201UCT._playout(self, node)
-
-    def _backpropagation(self, node: Node, result: float):
-        """
-        Backpropagates the result of a playout up the tree.
-        """
-        return RAVE._backpropagation(self, node, result)
-
-    def main_loop(self) -> Node:
-        """
-        Body of UCT
-        """
-        return NASBench201UCT.main_loop(self)
-
-
-class NASBench201GRAVE(NASBench201RAVE, GRAVE):
-
-    def __init__(self, root_node: Node, api, save_folder=None, params_path=None, disable_tqdm=False, df=None):
-        super().__init__(root_node, api, save_folder=save_folder, params_path=params_path, df=df)
-
-    def _selection(self, node: Node) -> Node:
-        """
-        Selects a candidate child node from the input node.
-        """
-        return GRAVE._selection(self, node)
 
 
 class NASBench201UCT_NTK(NASBench201UCT, NTKScorer):
@@ -164,52 +114,6 @@ class NASBench201UCT_NTK(NASBench201UCT, NTKScorer):
 
     def _score_network(self, network):
         return NTKScorer._score_network(self, network, benchmark="nb201")
-
-
-class NASBench201RAVE_NTK(NASBench201UCT_NTK, NASBench201RAVE):
-
-    def __init__(self, root_node: NASBench201AMAFNode, api, save_folder=None, params_path=None, disable_tqdm=False, df=None):
-        super(NASBench201RAVE_NTK, self).__init__(root_node, api, save_folder=save_folder, params_path=params_path,
-                                                  disable_tqdm=disable_tqdm, df=df)
-
-    def read_params(self, path):
-        NASBench201UCT_NTK.read_params(self, path)
-        NASBench201RAVE.read_params(self, path)
-
-    def _selection(self, node: Node) -> Node:
-        return NASBench201RAVE._selection(self, node)
-
-    def _expansion(self, node: Node) -> Node:
-        return NASBench201RAVE._expansion(self, node)
-
-    def _playout(self, node: Node):
-        return NASBench201UCT_NTK._playout(self, node)
-
-    def _backpropagation(self, node: Node, result: float):
-        return NASBench201RAVE._backpropagation(self, node, result)
-
-
-class NASBench201GRAVE_NTK(NASBench201RAVE_NTK, NASBench201GRAVE):
-
-    def __init__(self, root_node: NASBench201AMAFNode, api, save_folder=None, params_path=None, disable_tqdm=False, df=None):
-        super(NASBench201GRAVE_NTK, self).__init__(root_node, api, save_folder=save_folder, params_path=params_path,
-                                                   disable_tqdm=disable_tqdm, df=df)
-
-    def read_params(self, path):
-        NASBench201RAVE_NTK.read_params(self, path)
-        NASBench201GRAVE.read_params(self, path)
-
-    def _selection(self, node: Node) -> Node:
-        return NASBench201GRAVE._selection(self, node)
-
-    def _expansion(self, node: Node) -> Node:
-        return NASBench201GRAVE._expansion(self, node)
-
-    def _playout(self, node: Node):
-        return NASBench201RAVE_NTK._playout(self, node)
-
-    def _backpropagation(self, node: Node, result: float):
-        return NASBench201GRAVE._backpropagation(self, node, result)
 
 
 class NASBench201NestedMCS(NestedMCS, NASBench201UCT):
@@ -283,4 +187,3 @@ class NASBench201NRPA_NTK(NASBench201NRPA, NASBench201UCT_NTK, NRPA_NTK):
 
 if __name__ == '__main__':
     node = NASBench201AMAFNode(NASBench201Cell(4))
-    mcts = NASBench201RAVE(node, api=None, params_path="/userdata/T0259728/projets/nas/params.json", disable_tqdm=False)

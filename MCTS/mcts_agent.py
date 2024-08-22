@@ -1,43 +1,34 @@
+import sys
+sys.path.append('/Users/samy/Desktop/NTK4NAS/')
+
 import copy
 import json
-import pickle
-import shutil
 from datetime import datetime
-import os
 import sys
 from torch import nn
 
 from ntk.compute_score import compute_score
-from utils.CIFAR import CIFAR100Dataset, CIFAR10Dataset
-
-sys.path.append("..")
+from utils.CIFAR import CIFAR10Dataset
 
 
 import time
-import itertools
 from pprint import pprint
 
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 import torch
-from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from utils.losses import TverskyLoss
-from utils.helpers import create_now_folder, subset_classes
-from utils.model_trainer import ModelTrainer
-from utils.pytorch_dataset import RadarDataset, RadarDavaDataset
+from utils.helpers import subset_classes
 
-from .Node import Node, AMAFNode
+from MCTS.Node import Node
 
 
 class MCTSAgent:
 
-    def __init__(self, root_node: Node, trainer: ModelTrainer=None, save_folder=None, params_path=None, disable_tqdm=False):
+    def __init__(self, root_node: Node, save_folder=None, params_path=None, disable_tqdm=False):
         self.playouts_per_selection = None
         self.root = root_node
-        self.trainer = trainer
         self.playout_epochs = None
         self.C = None
         self.n_iter = None
@@ -47,8 +38,6 @@ class MCTSAgent:
         self.disable_tqdm = disable_tqdm
         if params_path is not None:
             self.params_path = params_path
-        elif params_path is None and trainer is not None:
-            self.params_path = trainer.params_path
         self.read_params(self.params_path)
 
 
@@ -95,10 +84,10 @@ class MCTSAgent:
 
 class NTKScorer(MCTSAgent):
 
-    def __init__(self, root_node: Node, trainer: ModelTrainer=None, save_folder=None, params_path=None, disable_tqdm=False):
+    def __init__(self, root_node: Node, save_folder=None, params_path=None, disable_tqdm=False):
         self.train_loader = None
         self.device = None
-        super().__init__(root_node, params_path=params_path, save_folder=save_folder, disable_tqdm=disable_tqdm, trainer=trainer)
+        super().__init__(root_node, params_path=params_path, save_folder=save_folder, disable_tqdm=disable_tqdm)
         dataset = CIFAR10Dataset()
         self.dataset_classes, self.class_permutation = subset_classes(dataset=dataset, samples_per_class=10, device=self.device,
                                                             subsample=10)
@@ -187,8 +176,8 @@ class NTKScorer(MCTSAgent):
 
 class UCT(MCTSAgent):
 
-    def __init__(self, root_node: Node, save_folder=None, disable_tqdm=False, trainer: ModelTrainer=None, params_path=None):
-        super().__init__(root_node, params_path=params_path, save_folder=save_folder, disable_tqdm=disable_tqdm, trainer=trainer)
+    def __init__(self, root_node: Node, save_folder=None, disable_tqdm=False, params_path=None):
+        super().__init__(root_node, params_path=params_path, save_folder=save_folder, disable_tqdm=disable_tqdm)
 
     def _score_node(self, child: Node, parent: Node, C=None) -> float:
         # Returns UCB score for a child node
@@ -252,15 +241,7 @@ class UCT(MCTSAgent):
         return node
 
     def _get_reward(self, node: Node):
-        network = self._create_network(node)
-        n_params = sum(p.numel() for p in network.parameters())
-        self.trainer.set_model(network)
-        self.trainer.set_parameters(self.trainer.params_path)
-        self.trainer.n_epochs = self.playout_epochs
-        self.trainer.train_model()
-        reward = 1 - np.mean(self.trainer.evaluate()["loss"])
-        del network
-        return reward
+        pass
 
 
     def _playout(self, node: Node):
@@ -349,168 +330,4 @@ class UCT(MCTSAgent):
             # self.root = root_type(copy.deepcopy(node.state))
 
         return node, self.all_rewards, self.best_reward
-
-class RAVE(UCT):
-
-    def __init__(self, root_node: Node, params_path=None, save_folder=None, disable_tqdm=False, trainer: ModelTrainer=None):
-        self.list_nodes = []
-        self.list_nodes.append(root_node)
-        self.b = None
-        super(RAVE, self).__init__(root_node, params_path=params_path, save_folder=save_folder, disable_tqdm=disable_tqdm, trainer=trainer)
-
-    def read_params(self, path):
-        super().read_params(path)
-        with open(path, "r") as f:
-            dic = json.load(f)
-        self.b = dic["mcts"]["rave_b"]
-
-    def beta(self, ni, ni_tilda):
-        """
-        D'après Gelly et Silver, beta(ni, ni_tilda) = n_tilda / (ni + ni_tilda + 4b^2ni*ni_tilda)
-        :param ni: Nombre de parties du noeud i
-        :param ni_tilda: Nombre de parties contenant le noeud i
-        :return:
-        """
-        p = ni_tilda
-        d = ni + ni_tilda + (4 * np.power(self.b, 2) * ni * ni_tilda)
-        return p / d
-
-    def _score_node(self, child: Node, parent: Node, C=None) -> int:
-        # Returns UCB score for a child node
-        if len(child.results) == 0:  # Si le noeud n'a pas encore été visité !
-            return np.inf
-        if C is None:
-            C = self.C
-        mu_i = np.mean(child.results)
-        mu_i_tilda = np.nan_to_num(np.mean(child.amaf), 0)
-        beta = self.beta(ni=len(child.results),
-                         ni_tilda=len(child.amaf))
-        exploration_term = C * (np.sqrt(np.log(len(parent.results)) / len(child.results)))
-        # print(f"[UCB RAVE] : move : {child.move}, mu_i = {mu_i}, mu_i_tilda = {mu_i_tilda}, beta = {beta}, autre param: {C * (np.sqrt(np.log(len(parent.results)) / len(child.results)))}")
-
-        return (1 - beta) * mu_i + beta * mu_i_tilda + exploration_term
-
-    """
-    Pas besoin de redéfinir la méthode de sélection
-    """
-
-    def _expansion(self, node: AMAFNode) -> AMAFNode:
-        """
-        Unless L ends the game decisively (e.g. win/loss/draw) for either player,
-        create one (or more) child nodes and choose node C from one of them.
-        Child nodes are any valid moves from the game position defined by L.
-        """
-        if not node.is_terminal():
-            """
-            Si le noeud n'a pas encore été exploré : on le retourne directement
-            """
-            if len(node.results) == 0 and node.parent is not None:
-                return node
-            node_type = type(node)
-            node.children = [node_type(copy.deepcopy(node.state),
-                                       move=m,
-                                       parent=node)
-                             for m in node.get_action_tuples()]
-            # pprint(node.get_action_tuples())
-
-            # Play the move for each child (updates the board in the child nodes)
-            for child in node.children:
-                self.list_nodes.append(child)
-                child.play_action(child.move)
-            returned_node = node.children[np.random.randint(0, len(node.children))]
-            # print(f"[EXPANSION] returning random child : {returned_node.move}")
-            return returned_node
-
-        return node
-
-    """
-    Pas besoin de redéfinir la méthode de playout
-    """
-
-    def _backpropagation(self, node: AMAFNode, result: float):
-        """
-        Backpropagates the result of a playout up the tree.
-        Also backpropagates the AMAF results.
-        :param node: Current node
-        :param result: Result of the playout
-        :return:
-        """
-        if node.parent is None:
-            node.results.append(result)
-            return "Done"
-
-        node.results.append(result)  # Ajouter le résultat à la liste
-        for temp_node in self.list_nodes:
-            if node.move == temp_node.move :#and temp_node.has_predecessor(node):
-                temp_node.amaf.append(result)
-        return self._backpropagation(node.parent, result)  # Fonction récursive
-
-class TrainingFreeRAVE(RAVE):
-
-    def __init__(self, root_node: Node, trainer: ModelTrainer, save_folder=None, disable_tqdm=False):
-        super().__init__(root_node, trainer, save_folder, disable_tqdm)
-        self.metric = NASWOT(trainer)
-
-    def _score_network(self, network):
-        self.trainer.set_model(network)
-        self.trainer.set_parameters(self.trainer.params_path)
-        self.metric.reset()
-        score = self.metric.score(network)
-        n_params = sum(p.numel() for p in network.parameters())
-        # penalty = 1 if n_params - self.max_params < 0 else n_params - self.max_params
-        penalty = 0 if n_params - self.max_params < 0 else -(1-(n_params/120441))**2
-        print(f"Score is {score}, penalty is {penalty}, so score = {score + penalty}")
-        score += penalty
-
-        return score
-
-class GRAVE(RAVE):
-
-    def __init__(self, root_node: Node, params_path=None, save_folder=None, disable_tqdm=False, trainer: ModelTrainer = None):
-        self.ref = None
-        super(GRAVE, self).__init__(root_node, params_path=params_path, save_folder=save_folder, disable_tqdm=disable_tqdm, trainer=trainer)
-
-    def read_params(self, path):
-        super().read_params(path)
-        with open(path, "r") as f:
-            dic = json.load(f)
-        self.ref = dic["mcts"]["grave_ref"]
-
-
-    def _score_node(self, child: AMAFNode, parent: Node, C=None) -> int:
-        # Returns UCB score for a child node
-        if len(child.results) == 0:  # Si le noeud n'a pas encore été visité !
-            return np.inf
-        if C is None:
-            C = self.C
-        ref_node = child
-        i=0
-        while len(ref_node.results) < self.ref:
-            if ref_node.parent.parent is None:
-                break
-            if i > 100:
-                break
-            ref_node = child.parent
-            i +=1
-
-        mu_i = np.mean(child.results)
-        mu_i_tilda = np.nan_to_num(np.mean(ref_node.amaf), 0)
-        beta = self.beta(ni=len(child.results),
-                         ni_tilda=len(ref_node.amaf))
-        exploration_term = C * (np.sqrt(np.log(len(parent.results)) / len(child.results)))
-        # print(f"[UCB GRAVE] : move : {child.move}, mu_i = {mu_i}, mu_i_tilda = {mu_i_tilda}, beta = {beta}, autre param: {C * (np.sqrt(np.log(len(parent.results)) / len(child.results)))}")
-        return (1 - beta) * mu_i + beta * mu_i_tilda + exploration_term
-
-class TrainingFreeGRAVE(GRAVE):
-
-    def __init__(self, root_node: Node, trainer: ModelTrainer, save_folder=None, disable_tqdm=False):
-        super().__init__(root_node, trainer, save_folder, disable_tqdm)
-        self.metric = NASWOT(trainer)
-
-    def _score_network(self, network):
-        self.trainer.set_model(network)
-        self.trainer.set_parameters(self.trainer.params_path)
-        self.metric.reset()
-        score = self.metric.score(network)
-        return score
 

@@ -66,38 +66,38 @@ class CIFAR10Dataset(Dataset):
 
 
 
-class CIFAR100Dataset(Dataset):
-    def __init__(self, data_dir="/userdata/T0259728/projets/cifar-100-python", mode='train'):
-        if mode == 'train':
-            self.data = self.load_batch(data_dir, 'train')
-        elif mode == 'test':
-            self.data = self.load_batch(data_dir, 'test')
-        else:
-            raise ValueError("Mode doit être 'train' ou 'test'.")
+# class CIFAR100Dataset(Dataset):
+#     def __init__(self, data_dir="../Dataset/CIFAR10/cifar-10-batches-py", mode='train'):
+#         if mode == 'train':
+#             self.data = self.load_batch(data_dir, 'train')
+#         elif mode == 'test':
+#             self.data = self.load_batch(data_dir, 'test')
+#         else:
+#             raise ValueError("Mode doit être 'train' ou 'test'.")
 
-        self.transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[129.3/255, 124.1/255, 112.4/255], std=[68.2/255, 65.4/255, 70.4/255])
-        ])
+#         self.transform = transforms.Compose([
+#             transforms.ToTensor(),
+#             transforms.Normalize(mean=[129.3/255, 124.1/255, 112.4/255], std=[68.2/255, 65.4/255, 70.4/255])
+#         ])
 
-    def __len__(self):
-        return len(self.data['data'])
+#     def __len__(self):
+#         return len(self.data['data'])
 
-    def __getitem__(self, idx):
-        img = Image.fromarray(self.data['data'][idx].reshape(3, 32, 32).transpose(1, 2, 0))
-        img = self.transform(img)
-        label = self.data['labels'][idx]
-        return img, label
+#     def __getitem__(self, idx):
+#         img = Image.fromarray(self.data['data'][idx].reshape(3, 32, 32).transpose(1, 2, 0))
+#         img = self.transform(img)
+#         label = self.data['labels'][idx]
+#         return img, label
 
-    def load_batch(self, data_dir, batch_name):
-        batch_file = os.path.join(data_dir, batch_name)
-        batch_data = self.unpickle(batch_file)
-        return {'data': batch_data[b'data'], 'labels': batch_data[b'fine_labels']}
+#     def load_batch(self, data_dir, batch_name):
+#         batch_file = os.path.join(data_dir, batch_name)
+#         batch_data = self.unpickle(batch_file)
+#         return {'data': batch_data[b'data'], 'labels': batch_data[b'fine_labels']}
 
-    def unpickle(self, file):
-        with open(file, 'rb') as fo:
-            dict = pickle.load(fo, encoding='bytes')
-        return dict
+#     def unpickle(self, file):
+#         with open(file, 'rb') as fo:
+#             dict = pickle.load(fo, encoding='bytes')
+#         return dict
 
 
 if __name__=="__main__":
