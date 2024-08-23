@@ -23,7 +23,7 @@ from torch.utils.data import Dataset
 
 
 class CIFAR10Dataset(Dataset):
-    def __init__(self, data_dir='../Dataset/CIFAR10/cifar-10-batches-py', mode='train'):
+    def __init__(self, data_dir='../coding/Dataset/cifar-10-batches-py/', mode='train'):
         if mode == 'train':
             self.data = self.load_all_batches(data_dir, 'data_batch')
         elif mode == 'test':
@@ -102,7 +102,7 @@ class CIFAR10Dataset(Dataset):
 
 if __name__=="__main__":
 
-    test_dataset = CIFAR10Dataset(mode='test')
+    test_dataset = CIFAR10Dataset(mode='train')
 
     # Exemple d'accès à un élément du jeu de données de test
     sample_img, sample_label = test_dataset[50]

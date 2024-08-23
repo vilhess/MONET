@@ -33,8 +33,8 @@ class NATSBenchUCT(UCT):
         self.api = api
         self.df = df
         self.metric = "accuracy"
-        # self.accuracies_tracker = []
-        # self.best_accuracy = 0
+        self.accuracies_tracker = []
+        self.best_accuracy_val = 0
 
     def _get_reward(self, node: NATSBenchSizeNode):
         if self.df is not None:
@@ -43,10 +43,12 @@ class NATSBenchUCT(UCT):
             row = self.df.loc[self.df["index"] == idx]
             reward = row[self.metric].item()
             ntk = row["score"].item()
-            # if reward > self.best_reward_value:
-            #     self.best_accuracy = row["accuracy"].item()
-            # self.accuracies_tracker.append(self.best_accuracy)
+
+            if reward > self.best_reward_value:
+                self.best_accuracy_val = row["accuracy"].item()
+            self.accuracies_tracker.append(self.best_accuracy_val)
             return reward
+        
         # 1. Find the string associated to the current state
         state_str = node.to_str()
         # 2. Find the associated architecture index in the api

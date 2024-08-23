@@ -75,25 +75,25 @@ if __name__=="__main__":
 
     # NASBENCH 101
 
-    # df = pd.read_csv('API/nas_bench_101.csv')
+    df = pd.read_csv('API/nas_bench_101.csv')
 
-    # df['score_ntk'] = 0.0
+    df['score_ntk'] = 0.0
 
-    # size = len(df)
-    # idxs = range(size)
+    size = len(df)
+    idxs = range(size)
 
-    # for i in tqdm(idxs):
+    for i in tqdm(idxs):
 
-    #     dic = get_info(df, i)
-    #     adj = dic["adj_matrix"]
-    #     op = dic["operations"]
-    #     network = NBNetwork((adj, op)).to(DEVICE)
+        dic = get_info(df, i)
+        adj = dic["adj_matrix"]
+        op = dic["operations"]
+        network = NBNetwork((adj, op)).to(DEVICE)
 
-    #     score_ntk = compute_score(network, dataset_classes, class_permutation, device=DEVICE, benchmark="nb101")
+        score_ntk = compute_score(network, dataset_classes, class_permutation, device=DEVICE, benchmark="nb101")
 
-    #     df.at[i, "score_ntk"] = score_ntk
+        df.at[i, "score_ntk"] = score_ntk
 
-    #     nb101 = df.iloc[idxs]
+        nb101 = df.iloc[idxs]
 
 
     # NASBENCH 201
@@ -194,9 +194,9 @@ if __name__=="__main__":
 
     fig, axs = plt.subplots(1, 3, figsize=(15, 5))
 
-    # axs[2].scatter(normalize(nb101['score_ntk']), nb101['final_validation_accuracy'], color=sns.color_palette()[0])
-    # axs[2].set_title('NASBench 101')
-    # axs[2].legend()
+    axs[2].scatter(normalize(nb101['score_ntk']), nb101['final_validation_accuracy'], color=sns.color_palette()[0])
+    axs[2].set_title('NASBench 101')
+    axs[2].legend()
 
     axs[0].scatter(normalize(nb201['score_ntk']), nb201['accuracy'], color=sns.color_palette()[0])
     axs[0].set_title('NASBench 201')
