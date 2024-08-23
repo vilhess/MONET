@@ -161,9 +161,6 @@ if __name__ == "__main__":
  
     print(args_dict)
 
-    if not os.path.isdir(args_dict["log_dir"]):
-        os.mkdir(args_dict["log_dir"])
-
     agent.main_loop()
  
     results_dict = {"best_reward": [np.float64(e) for e in agent.best_reward],
